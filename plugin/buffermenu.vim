@@ -1,6 +1,6 @@
 " Buffer Menus - Add menus to the current buffer only.
 " Author: Michael Geddes <michaelrgeddes@optushome.com.au>
-" Version: 1.3
+" Version: 1.5
 
 " Usage -
 " Bmenu[!] [<modes>] [<priority>] <Menuname> <Mapping>
@@ -43,7 +43,7 @@ endfun
 "  Use ! for 'noremenu'
 fun! s:DoBufferMenu( bang, ...)
 	let n=1
-	let modes='nvo'
+	let modes=''
 	if a:{n} =~ '^[anvoic]*$' 
 		let modes=a:{n}
 		let n=n+1
@@ -117,7 +117,7 @@ endfun
 
 " Execute '\n' separated items in such a way that errors can be reported with
 " the command executed.
-fun! s:CallStack(stack)
+fun! s:CallStack(stack,stackname)
 	let mx="^\n\\=[^\n]*"
 	let here=0
 	let last=strlen(a:stack)
@@ -129,7 +129,7 @@ fun! s:CallStack(stack)
 	  let v:errmsg=""
 	  exe cmd
 	  if v:errmsg!="" 
-		echoerr 'In command: '.cmd
+		echoerr 'Error processing stack "'.a:stackname.'" command: '.cmd
 	  else
 		let v:errmsg=erm
 	  endif
@@ -138,15 +138,25 @@ fun! s:CallStack(stack)
 endfun
 " Restore the menus for the buffer
 fun! s:RestoreMenus()
-  if exists("b:bufferUnmenuStack")
-  	call s:CallStack(b:bufferUnmenuStack)
+  if exists("b:bufferUnmenuStack") && exists('b:buffer_did_menu_stack')
+	unlet b:buffer_did_menu_stack
+	call s:CallStack(b:bufferUnmenuStack, 'Buffer Unmenu')
   endif
 endfun
 " Remove the menus for the buffer
 fun! s:BufferMenus()
 	if exists("b:bufferMenuStack")
-		call s:CallStack(b:bufferMenuStack)
+		let b:buffer_did_menu_stack=1
+		call s:CallStack(b:bufferMenuStack, 'Buffer Menu')
 	endif
+endfun
+
+fun! BufferOneShot(desc)
+	if exists('b:buffer_oneshot_'.a:desc)
+		return 0
+	endif
+ 	let b:buffer_oneshot_{a:desc}=1
+	return 1
 endfun
 
 aug MRGBufferMenuEnter
