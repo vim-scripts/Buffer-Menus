@@ -1,6 +1,6 @@
 " Buffer Menus - Add menus to the current buffer only.
 " Author: Michael Geddes <michaelrgeddes@optushome.com.au>
-" Version: 1.2
+" Version: 1.3
 
 " Usage -
 " Bmenu[!] [<modes>] [<priority>] <Menuname> <Mapping>
@@ -54,9 +54,16 @@ fun! s:DoBufferMenu( bang, ...)
 		let n=n+1
 	endif
 	if a:0 == (n+1)
-		call s:BufferMenu( a:bang=='!', modes, menunumber.a:{n}, a:{n+1} )
+		call s:BufferMenu( a:bang=='!', modes, menunumber.escape(a:{n},' '), a:{n+1} )
 	else
-		call confirm('Invalid arguments')
+		let cmd='('.modes.')menu'.a:bang.' '.menunumber.' ^^ '
+		let x=n
+		while x<= a:0
+			let cmd=cmd.' {'.escape(a:{x},' ').'}'
+			let x=x+1
+		endwhile
+		"echoerr (a:0) . '!='. (n+1)
+		echoerr 'Invalid arguments: '.cmd
 	endif
 endfun
 
@@ -97,9 +104,7 @@ fun! s:BufferMenu( dontremap, modes, menuname, mapping )
 	  let v:errmsg=""
 	  exe cmd
 	  if v:errmsg!="" 
-		echohl ErrorMsg
-		echo 'In command: '.cmd
-		echohl None
+		echoerr 'In command: '.cmd
 		break
 	  else
 		let v:errmsg=erm
@@ -124,9 +129,7 @@ fun! s:CallStack(stack)
 	  let v:errmsg=""
 	  exe cmd
 	  if v:errmsg!="" 
-		echohl ErrorMsg
-		echo 'In command: '.cmd
-		echohl None
+		echoerr 'In command: '.cmd
 	  else
 		let v:errmsg=erm
 	  endif
