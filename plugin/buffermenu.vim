@@ -1,6 +1,6 @@
 " Buffer Menus - Add menus to the current buffer only.
 " Author: Michael Geddes <michaelrgeddes@optushome.com.au>
-" Version: 1.1
+" Version: 1.2
 
 " Usage -
 " Bmenu[!] [<modes>] [<priority>] <Menuname> <Mapping>
@@ -92,10 +92,20 @@ fun! s:BufferMenu( dontremap, modes, menuname, mapping )
 
 	" Execute 
 	while ma < strlen(modes)
-	  let b:bufferUnmenuStack=modes[ma].'unmenu '.substitute(menuname,'^\s*[0-9][0-9.]*','','').sep.b:bufferUnmenuStack
 	  let cmd=(modes[ma]).noRe. 'menu '.menuname.' '.a:mapping
+	  let erm=v:errmsg
+	  let v:errmsg=""
 	  exe cmd
-	  let b:bufferMenuStack=b:bufferMenuStack.cmd.sep
+	  if v:errmsg!="" 
+		echohl ErrorMsg
+		echo 'In command: '.cmd
+		echohl None
+		break
+	  else
+		let v:errmsg=erm
+		let b:bufferUnmenuStack=modes[ma].'unmenu '.substitute(menuname,'^\s*[0-9][0-9.]*','','').sep.b:bufferUnmenuStack
+		let b:bufferMenuStack=b:bufferMenuStack.cmd.sep
+	  endif
 	  let ma=ma+1
 	endwhile
 endfun
@@ -115,7 +125,7 @@ fun! s:CallStack(stack)
 	  exe cmd
 	  if v:errmsg!="" 
 		echohl ErrorMsg
-		echo 'In Line: '.cmd
+		echo 'In command: '.cmd
 		echohl None
 	  else
 		let v:errmsg=erm
