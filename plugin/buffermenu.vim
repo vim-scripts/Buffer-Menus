@@ -1,6 +1,6 @@
 " Buffer Menus - Add menus to the current buffer only.
 " Author: Michael Geddes <michaelrgeddes@optushome.com.au>
-" Version: 1.5
+" Version: 1.6
 
 " Usage -
 " Bmenu[!] [<modes>] [<priority>] <Menuname> <Mapping>
@@ -53,8 +53,15 @@ fun! s:DoBufferMenu( bang, ...)
 		let menunumber=a:{n}.' '
 		let n=n+1
 	endif
-	if a:0 == (n+1)
-		call s:BufferMenu( a:bang=='!', modes, menunumber.escape(a:{n},' '), a:{n+1} )
+	if a:0 >= (n+1)
+		let menuname=escape(a:{n},' ')
+		let menucmd=a:{n+1}
+		let n=n+2
+		while n <= a:0
+			let menucmd=menucmd.' '.a:{n}
+			let n=n+1
+		endwhile
+		call s:BufferMenu( a:bang=='!', modes, menunumber.menuname, menucmd )
 	else
 		let cmd='('.modes.')menu'.a:bang.' '.menunumber.' ^^ '
 		let x=n
@@ -62,7 +69,6 @@ fun! s:DoBufferMenu( bang, ...)
 			let cmd=cmd.' {'.escape(a:{x},' ').'}'
 			let x=x+1
 		endwhile
-		"echoerr (a:0) . '!='. (n+1)
 		echoerr 'Invalid arguments: '.cmd
 	endif
 endfun
