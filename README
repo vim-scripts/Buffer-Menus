@@ -1,0 +1,51 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=246
+
+Adds menus for the current buffer.   When you leave the buffer, they get removed, and when you go back in, they are added again.
+It cannot be used effectively to replace a menu as it is not possible to find out what the mapping used to be (as for map commands), and therefore not possible to restore it (*sigh*)
+
+This is taken from my 'buffoptions' script, and should be useful in enabling menus to be added to ftplugin scripts.
+
+NOTE: When adding to ftplugin scripts make VERY sure that the menus only get added ONCE (reinclude protection is good here).
+
+TODO: (Please email me to add to this list)
+- Allow 'Unmenu' of individual menus
+
+
+Usage -
+:Bmenu[!] ["<silent>"] ["<unmenu>"|"<disable>"] [<modes>] [<priority>] <Menuname> <Mapping>
+ 		Add menus to different modes for the current buffer.  (Bang is used to
+        specify 'noremenu')
+:B[ivacn]menu[!]["<silent>"] ["<unmenu>"|"<disable>"]  [<priority>] <Menuname> <Mapping>
+	    Add menu for one mode (or 'a' for all modes) for the current buffer.
+      (Bang is used to specify 'noremenu')
+
+B[ivacn]noremenu ["<silent>"] ["<unmenu>"|"<disable>"] [<modes>] [<priority>] <Menuname> <Mapping>
+      Adds a 'norecursive' menu.
+
+The above commands accept '<silent>' as a flag to do a silent mapping.
+They also allow <SID> (providing you have done the "exe FindBufferSID()"
+at the beginning of the script), and will expand <leader> and <localleader>
+in menu names.
+
+If g:buffermenu_use_disable is set to 1 then all buffermenus use
+enable/disable to update the menus.  Otherwise, they will use menu/unmenu.
+To override for one menu only, use <unmenu> or <disable>
+
+
+:Bunmenuall
+      Remove all menus for the current buffer
+
+BufferOneShot( <ident> )
+ 		Use this to make sure Bmenus only get added ONCE per buffer.
+ 		eg:
+ 		if BufferOneShot('MyProgram')
+ 			Bmenu 10.20 Test.Test iHello<esc>
+ 		endif
+ 		A buffer local-variable called b:buffer_oneshot_MyProgram will be
+ 		created (just in case you want to unlet it when testing).
+
+exe FindBufferSID() 
+		:exe the result of this function when using <SID> in menu commands so that the correct
+		function gets called.
+
+
