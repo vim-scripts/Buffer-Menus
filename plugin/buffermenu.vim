@@ -1,6 +1,6 @@
 " Buffer Menus - Add menus to the current buffer only.
 " Author: Michael Geddes <michaelrgeddes@optushome.com.au>
-" Version: 1.0
+" Version: 1.1
 
 " Usage -
 " Bmenu[!] [<modes>] [<priority>] <Menuname> <Mapping>
@@ -27,21 +27,21 @@
 com! -nargs=+ -bang -complete=menu Bmenu call <SID>DoBufferMenu(<q-bang>, <f-args> )
 com! -nargs=+ -bang -complete=menu Bimenu call <SID>DoBufferMenu(<q-bang>, 'i', <f-args> )
 com! -nargs=+ -bang -complete=menu Bvmenu call <SID>DoBufferMenu(<q-bang>, 'v', <f-args> )
-com! -nargs=+ -bang -complete=menu Bamenu call <SID>DoBufferMenu(<q-bang>, ,'a', <f-args> )
-com! -nargs=+ -bang -complete=menu Bcmenu call <SID>DoBufferMenu(<q-bang>, ,'c', <f-args> )
-com! -nargs=+ -bang -complete=menu Bnmenu call <SID>DoBufferMenu(<q-bang>, ,'n', <f-args> )
+com! -nargs=+ -bang -complete=menu Bamenu call <SID>DoBufferMenu(<q-bang>, 'a', <f-args> )
+com! -nargs=+ -bang -complete=menu Bcmenu call <SID>DoBufferMenu(<q-bang>, 'c', <f-args> )
+com! -nargs=+ -bang -complete=menu Bnmenu call <SID>DoBufferMenu(<q-bang>, 'n', <f-args> )
 com! -nargs=0 Bunmenuall call <SID>ClearBufferMenus()
 
 " Clear out all the menus
 fun! s:ClearBufferMenus()
-	call s:RestoreOptions()
+	call s:RestoreMenus()
 	let b:bufferMenuStack=""
-	let b:unmenuStack=""
+	let b:bufferUnmenuStack=""
 endfun
 
 " Works out what arguments were passed to the command.
 "  Use ! for 'noremenu'
-fun! s:DoBufferMenu( bang,...)
+fun! s:DoBufferMenu( bang, ...)
 	let n=1
 	let modes='nvo'
 	if a:{n} =~ '^[anvoic]*$' 
@@ -77,6 +77,11 @@ fun! s:BufferMenu( dontremap, modes, menuname, mapping )
 	else
 	  let noRe=''
 	endif
+	let mll=escape(exists('maplocalleader')?maplocalleader : "\\","\\|")
+	let ml=escape(exists('mapleader')?mapleader : "\\","\\|")
+
+	let menuname=substitute(a:menuname, '\c<localleader>',escape(mll,"\\") , 'g')
+	let menuname=substitute(menuname, '\c<leader>',escape(ml,"\\") , 'g') 
 
 	" Get the modes - if nothing, use the default.
 	let ma=0
@@ -87,8 +92,8 @@ fun! s:BufferMenu( dontremap, modes, menuname, mapping )
 
 	" Execute 
 	while ma < strlen(modes)
-	  let b:bufferUnmenuStack=modes[ma].'unmenu '.substitute(a:menuname,'^\s*[0-9][0-9.]*','','').sep.b:bufferUnmenuStack
-	  let cmd=(modes[ma]).noRe. 'menu '.a:menuname.' '.a:mapping
+	  let b:bufferUnmenuStack=modes[ma].'unmenu '.substitute(menuname,'^\s*[0-9][0-9.]*','','').sep.b:bufferUnmenuStack
+	  let cmd=(modes[ma]).noRe. 'menu '.menuname.' '.a:mapping
 	  exe cmd
 	  let b:bufferMenuStack=b:bufferMenuStack.cmd.sep
 	  let ma=ma+1
